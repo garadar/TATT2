@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# albert_k - APING_I3 2018 
+# 
 # python 2.7
 
 from scapy.all import *
